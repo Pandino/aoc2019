@@ -1,6 +1,4 @@
-
-
-wires = ['R75,D30,R83,U83,L12,D49,R71,U7,L72', 'U62,R66,U55,R34,D71,R55,D58,R83']
+import sys
 
 def distance(p1, p2):
     '''Calculate Manhattan distance between two points p1 and p2.
@@ -59,6 +57,11 @@ def move(start, to):
 
 intersections = list()
 
+wires = list()
+with open('input') as f:
+    for line in f:
+        wires.append(line)
+
 wire_a_moves = wires[0].split(',')
 wire_b_moves = wires[1].split(',')
 
@@ -75,8 +78,13 @@ for a_move in wire_a_moves:
             intersections.append(c)
         b = b_next
     a = a_next
+    b = (0, 0)
 
 intersections.remove((0, 0))
+if len(intersections) == 0:
+    print('No intersections found')
+    sys.exit()
+
 distances = list()
 for cross in intersections:
     distances.append(distance((0, 0), cross))
