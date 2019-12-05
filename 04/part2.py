@@ -20,16 +20,23 @@ def is_valid(number):
     if int_number < start or int_number > imax:
         raise OutOfBoundException()
 
-    if len(set(number)) == 6:
-        return False
-
+    counts = list()
+    counter = 1
     prev_digit = number[0]
-    for digit in number:
+    for digit in number[1:]:
         if prev_digit > digit:
             return False
+        if prev_digit == digit:
+            counter += 1
+        else:
+            counts.append(counter)
+            counter = 1
         prev_digit = digit
+    counts.append(counter)
 
-    return True
+    if 2 in counts:
+        return True
+    return False
 
 total = 0
 
