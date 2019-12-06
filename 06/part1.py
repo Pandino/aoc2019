@@ -24,24 +24,31 @@ def get_object(objects, name):
             return object
     return None
 
-def count_orbits(object):
-    if object.orbit is None:
+def count_orbits(obj, destination=None):    
+    if destination is not None and destination == obj:
         return 0
-    return 1 + count_orbits(object.orbit)
+    if obj.orbit is None:
+        return 0
+    return 1 + count_orbits(obj.orbit, destination)
+
+def get_path(obj, path=None):
+    if path is None:
+        path = list()
+    if obj.orbit is None:
+        return [obj]
+    return path.append(get_path(obj.orbit, path))
 
 if __name__ == '__main__':
 
     objects = set()
     line_count = 0
         
-    with open('06/orbits.txt') as f:
+    with open('06/test.txt') as f:
         for line in f:
             line_count += 1
             obj_a, obj_b = line.strip().split(')')[0:2]
-            print(f'a: {obj_a}; b: {obj_b}')
             parent = get_object(objects, obj_a)
             if parent is None:
-                print(f'FOUND object without parent: {obj_a}')
                 parent = OrbitObject(obj_a)
                 objects.add(parent)
             orbiter =  get_object(objects, obj_b)
@@ -51,12 +58,14 @@ if __name__ == '__main__':
                 orbiter.orbit = parent
             else:
                 orbiter = OrbitObject(obj_b, parent)
-            objects.add(orbiter)
+                objects.add(orbiter)
     
     print(f'Processed {line_count} lines and found {len(objects)} objects')
 
-    print(sum([count_orbits(object) for object in objects]))
+    #print(sum([count_orbits(object) for object in objects]))
 
-    print(count_orbits(get_object(objects, '4HR')))
+    #print(count_orbits(get_object(objects, 'H'), get_object(objects, 'B')))
     
+    h = get_object(objects,'H')
+    print(get_path(h))
         
