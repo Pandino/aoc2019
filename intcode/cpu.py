@@ -71,6 +71,7 @@ class Cpu():
 
         if self.done:
             raise Exception('Program already finished.')
+        self.output_wait = False
 
         while True:
             opcode = self._get_opcode()
@@ -95,6 +96,7 @@ class Cpu():
                 # Save a number from Input. Params: [Out]. Len: 2
                 if len(self.input_buffer) > 0:
                     self._write(1, self.input_buffer.pop())
+                    self.input_wait = False
                     self._next(2)
                 else:
                     self.input_wait = True
@@ -102,6 +104,7 @@ class Cpu():
             elif opcode == 4:
                 # Send a number to Output. Params: [Out]. Len: 2
                 output = self._get_parameters(1).pop()
+                self.output_wait = True
                 self._next(2)
                 return (2, output)
             elif opcode == 5:

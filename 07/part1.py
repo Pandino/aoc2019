@@ -1,22 +1,3 @@
-''' Input/output:
-Input
-a) Init class or cpu.run with list of input values
-b) Break on input (exception, return code?) and wait for cpu.input(int) to continue 
-c) Input buffer stack (FIFO) given as a), if empty b)
-
-Output
-a) break on output (this will break day 5 part 1) use cpu.get_output to retrieve the output value, use cpu.resume() to continue excecution
-b) provide a function to run on output (?) 
-
-
-Pseudocode
-amplifiers = [ABCDEF]
-ampli_cpus = [Cpu(code) for _ in ABCDEF]
-for phases in possible_phase_vaues:
-    input = 0
-    for i, ampli in enumerate(ampli_cpus):
-        ampli.run([input, phases[i]])
-'''
 from intcode import cpu
 from itertools import permutations
 
