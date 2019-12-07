@@ -6,4 +6,13 @@ input_code = '3,225,1,225,6,6,1100,1,238,225,104,0,1101,11,91,225,1002,121,77,22
 
 code = [int(i) for i in input_code.split(',')]
 
-cpu.Cpu(code).run()
+inspector = cpu.Cpu(code)
+while True:
+    exit_code = inspector.run()
+    if exit_code[0] == 0:
+        break
+    elif exit_code[0] == 1:
+        value = int(input('Input: '))
+        inspector.input(value)
+    elif exit_code[0] == 2:
+        print(exit_code[1])
