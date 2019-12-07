@@ -79,12 +79,12 @@ class Cpu():
                 self.done = True
                 return (0, )
             if opcode == 1:
-                # Sum two numbers. Params: [In, In, Dest]. Len: 4
+                # ADD X, Y. Params: [In, In, Dest]. Len: 4
                 result = sum(self._get_parameters(2))
                 self._write(3, result)
                 self._next(4)
             elif opcode == 2:
-                # Multiply two numbers. Params: [In, In, Dest]. Len: 4
+                # MUL X, Y. Params: [In, In, Dest]. Len: 4
                 params = self._get_parameters(2)
                 product = 1
                 for param in params:
@@ -105,18 +105,21 @@ class Cpu():
                 self._next(2)
                 return (2, output)
             elif opcode == 5:
+                # JNZ. Params: [In, In]. Len: 3
                 test, dest = self._get_parameters(2)
                 if test == 0:
                     self._next(3)
                 else:
                     self.instruction_pointer = dest
             elif opcode == 6:
+                # JZ. Params: [In, In]. Len: 3
                 test, dest = self._get_parameters(2)
                 if test == 0:
                     self.instruction_pointer = dest
                 else:
                     self._next(3)
             elif opcode == 7:
+                # Less than. Params: [In, In, Out]. Len: 4
                 a, b = self._get_parameters(2)
                 if a < b:
                     self._write(3, 1)
@@ -124,6 +127,7 @@ class Cpu():
                     self._write(3, 0)
                 self._next(4)
             elif opcode == 8:
+                # EQ. Params: [In, In, Out]. Len: 4
                 a, b = self._get_parameters(2)
                 if a == b:
                     self._write(3, 1)
