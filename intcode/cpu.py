@@ -47,7 +47,7 @@ class Cpu():
 
         while True:
             self.cycle += 1
-            opcode = _get_opcode()
+            opcode = self._get_opcode()
             skip = 1
             if opcode == 99:
                 break        
@@ -71,7 +71,7 @@ class Cpu():
                 skip = 2
             elif opcode == 4:
                 # Send a number to Output. Params: [Out]. Len: 2
-                output = self._get_parameters(1)
+                output = self._get_parameters(1).pop()
                 print(output)
                 skip = 2
             elif opcode == 5:
