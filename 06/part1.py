@@ -10,7 +10,7 @@ class OrbitObject():
         return hash(self.name)
 
     def __repr__(self):
-        return f'<OrbitObject> {self.name} orbiting arount {self.orbit}'
+        return f'<OrbitObject> {self.name}'
 
     def __str__(self):
         if self.orbit is not None:
@@ -31,19 +31,17 @@ def count_orbits(obj, destination=None):
         return 0
     return 1 + count_orbits(obj.orbit, destination)
 
-def get_path(obj, path=None):
-    if path is None:
-        path = list()
-    if obj.orbit is None:
-        return [obj]
-    return path.append(get_path(obj.orbit, path))
+def get_path(obj):
+    while obj is not None:
+        yield obj
+        obj = obj.orbit
 
 if __name__ == '__main__':
 
     objects = set()
     line_count = 0
         
-    with open('06/test.txt') as f:
+    with open('06/orbits.txt') as f:
         for line in f:
             line_count += 1
             obj_a, obj_b = line.strip().split(')')[0:2]
@@ -66,6 +64,19 @@ if __name__ == '__main__':
 
     #print(count_orbits(get_object(objects, 'H'), get_object(objects, 'B')))
     
-    h = get_object(objects,'H')
-    print(get_path(h))
+    you = get_object(objects,'YOU')
+    san = get_object(objects,'SAN')
+    all_you_orbits = set(get_path(you))
+
+    for object in get_path(san):
+        if object in all_you_orbits:
+            destination = object
+            break
+    
+    you_to_dest_jumps = count_orbits(you, destination) - 1
+    san_to_dest_jumps = count_orbits(san, destination) - 1
+
+    total_jumps = you_to_dest_jumps + san_to_dest_jumps
+
+    print(f'Found common point at {destination}. YOU to common: {you_to_dest_jumps}, SAN to common: {san_to_dest_jumps}. Total: {total_jumps}')
         
