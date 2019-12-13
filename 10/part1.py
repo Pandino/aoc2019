@@ -13,8 +13,10 @@ with open('10/tests') as f:
 def convert_angle(angle):
     '''Convert geometrical coordinates to radiants. Zero degrees is along the positive y axis and increase clockwise'''
     r = atan2(*angle)
-    if r < 0:
-        r = (pi + r) + pi
+    if r >= 0:
+        r = (pi - r)
+    else:
+        r = abs(r) + pi 
     return r
 
 class Asteroids():
@@ -25,8 +27,8 @@ class Asteroids():
     def angle_from(self, other):
         if self == other:
             return 0
-        x = self.x - other.x
-        y = self.y - other.y
+        x = other.x - self.x
+        y = other.y - self.y
         common_denominator = gcd(x, y)
         return (x//common_denominator, y//common_denominator)
 
@@ -51,7 +53,7 @@ class Asteroids():
 
     
 
-asteroid_map = maps[0]
+asteroid_map = maps[5]
 
 asteroids = list()
 
@@ -78,13 +80,19 @@ print(f'Best asteriod is {monitoring_station} with a view of {highest_targets} a
 asteroids_by_angle = dict()
 
 for asteroid in asteroids:
+    if asteroid == monitoring_station:
+        continue
     angle = monitoring_station.angle_from(asteroid)
     if angle not in asteroids_by_angle:
         asteroids_by_angle[angle] = list()
     asteroids_by_angle[angle].append(asteroid)
 
 for angle in asteroids_by_angle.keys():
-    asteroids_by_angle[angle] = sorted(asteroids_by_angle[angle], key=lambda target: monitoring_station.rel_distance(target))
+    asteroids_by_angle[angle] = sorted(asteroids_by_angle[angle], key=lambda target: monitoring_station.rel_distance(target), reverse=True)
 
-for angle in asteroids_by_angle.keys():
-    print(asteroids_by_angle[angle])
+sorted_angles = sorted(asteroids_by_angle.keys(), key=lambda angle: convert_angle(angle))
+
+print(len(sorted_angles))
+target_angle = sorted_angles[199]
+print(target_angle, asteroids_by_angle[target_angle])
+
