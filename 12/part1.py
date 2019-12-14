@@ -2,29 +2,26 @@ import re
 from itertools import combinations
 from math import gcd
 
-# aoc_input='''<x=16, y=-8, z=13>
-# <x=4, y=10, z=10>
-# <x=17, y=-5, z=6>
-# <x=13, y=-3, z=0>'''
+aoc_input='''<x=16, y=-8, z=13>
+<x=4, y=10, z=10>
+<x=17, y=-5, z=6>
+<x=13, y=-3, z=0>'''
 
 ### TEST CASES ###
 # aoc_input='''<x=-1, y=0, z=2>
 # <x=2, y=-10, z=-7>
 # <x=4, y=-8, z=8>
 # <x=3, y=5, z=-1>'''
-aoc_input='''<x=-8, y=-10, z=0>
-<x=5, y=5, z=10>
-<x=2, y=-7, z=3>
-<x=9, y=-8, z=-3>'''
+# aoc_input='''<x=-8, y=-10, z=0>
+# <x=5, y=5, z=10>
+# <x=2, y=-7, z=3>
+# <x=9, y=-8, z=-3>'''
 
 class Vector1():
     def __init__(self, position, velocity):
         self.position = position
         self.velocity = velocity
         self.orbital_period = None
-
-    def step(self):
-        self.position += velocity
 
     def __eq__(self, other):
         if isinstance(other, Vector1):
@@ -49,13 +46,17 @@ class Simulation():
         once all vectors have a period:
         calculate lcm
         '''
-        while self.steps < step_limit and any([vector.orbital_period is None for vector in self.vectors]):
+        while self.steps < step_limit:
             self._apply_gravity()
             self._apply_velocity()
             self.steps += 1
-            for vector, origin in zip(self.vectors, self.origin_vectors):
-                if vector == origin and vector.orbital_period is None:
-                    vector.orbital_period = self.steps
+            # for vector, origin in zip(self.vectors, self.origin_vectors):
+            #     if vector == origin and vector.orbital_period is None:
+            #         vector.orbital_period = self.steps
+            if all([vector == original for vector, original in zip(self.vectors, self.origin_vectors)]):
+                return self.steps
+        return None
+        
 
     def _apply_gravity(self):
         for a, b in combinations(self.vectors, 2):
@@ -97,12 +98,10 @@ if __name__ == '__main__':
 
     x, y, z = zip(*moons)
     simulation = Simulation(x)
-    simulation.run(100000000000)
-    rx = simulation.get_period()
+    rx = simulation.run(100000000000)
     simulation = Simulation(y)
-    simulation.run(100000000000)
-    ry = simulation.get_period()
+    ry = simulation.run(100000000000)
     simulation = Simulation(z)
-    simulation.run(100000000000)
-    rz = simulation.get_period()
+    rz = simulation.run(100000000000)
+    print(rx, ry, rz)
     print(lcm((rx, ry, rz)))
