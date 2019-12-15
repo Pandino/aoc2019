@@ -102,27 +102,59 @@ class NanoFactory():
         self.reactions = dict()
         self.inventory = dict()
         self.required_amounts = dict()
+        self.production = dict()
         self._parser(puzzle_input)
         self._init_dicts()
+
+    def reset(self):
+        self.inventory = dict()
+        self.required_amounts = dict()
+        self.production = dict()
+        self._init_dicts()
+
 
     def _init_dicts(self):
         for reaction in self.reactions.values():
             for chemical in reaction.chemical_names():
                 self.inventory[chemical] = 0
-                self.required_amounts[chemical] = 0
+                self.production[chemical] = 0
+
+    def resolvea(self, ore_amount):
+        low = 0
+        high = 2
+        fuel_amount = high
+        startup = True
+        while True:
+            if startup:
+                fuel_amount = fuel_amount**2
+            else:
+                fuel_amount = low + ((high - low) // 2)
+            self.reset()
+            self.inventory['ORE'] = ore_amount
+            self.required_amounts['FUEL'] = fuel_amount
+            self.resolveb()
+            if 'ORE' in self.required_amounts:
+                startup = False
+                high = fuel_amount
+            else:
+                if fuel_amount == low:
+                    break
+                low = fuel_amount
+
+        print(fuel_amount)
+                # print(self.required_amounts)
+                # print(self.inventory)
+                # print(self.production)
+                # print('---------')
+                # break
+
+
 
     def resolveb(self):
         finished = False
         while not finished:
-            print(self.required_amounts)
-            print(self.inventory)
-            print('---------')
             finished = True
             for chemical in list(self.required_amounts.keys()):
-                if chemical not in self.reactions:
-                    continue
-                
-                finished = False
                                 
                 required_amount = self.required_amounts[chemical]
                 if required_amount <= self.inventory[chemical]:
@@ -131,11 +163,16 @@ class NanoFactory():
                     del self.required_amounts[chemical] 
                 else:
                     # Produce it
+                    if chemical not in self.reactions:
+                        continue
+                    
+                    finished = False
                     reaction = self.reactions[chemical]
                     amount_to_produce = required_amount - self.inventory[chemical]
                     multiplier = 1
                     if amount_to_produce > reaction.quantity:
                         multiplier = ceil(amount_to_produce/reaction.quantity)
+                    self.production[chemical] += reaction.quantity * multiplier
                     self.inventory[chemical] += reaction.quantity * multiplier - required_amount
                     del self.required_amounts[chemical]
                     for reagent, reagent_amount in reaction.reagents.items():
@@ -171,5 +208,4 @@ with open('14/puzzle_input') as f:
 
 factory = NanoFactory(puzzle_input)
 print([str(reaction) for reaction in factory.reactions.values()])
-factory.required_amounts['FUEL'] = 1
-factory.resolveb()
+factory.resolvea(1000000000000)
