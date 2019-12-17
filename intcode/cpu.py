@@ -10,22 +10,25 @@ class Cpu():
         2 Program sent an output value (as sole parameter). 
     '''
 
-    def __init__(self, code, start=0, inputs=None, id=None):
+    def __init__(self, code, inputs=None, id=None):
         self.id = id
-        self.code = { key: value for (key, value) in enumerate(code)}
-        self.instruction_pointer = start
+        self.rom = { key: value for (key, value) in enumerate(code)}
+        
+        self.reset()
+        if inputs is not None:
+            self.input_buffer = inputs
+        
+        
+    def reset(self):
+        self.code = self.rom.copy()
         self.relative_base = 0
         self.cycle = 0
-        if inputs is None:
-            self.input_buffer = list()
-        else:
-            self.input_buffer = inputs
-
-        # States
         self.done = False
         self.input_wait = False
         self.output_wait = False
-
+        self.input_buffer = list()
+        self.instruction_pointer = 0
+    
     def _next(self, op_len):
         self.instruction_pointer += op_len
 
