@@ -17,7 +17,6 @@ class RepairDrone():
         print(self.term.clear, end='')
         
     def run(self, path):
-        self.cpu.reset()
         for move in path:
             self.cpu.input(move)
 
@@ -44,28 +43,28 @@ class RepairDrone():
           - save result of last step in the map 
           - if result is not a wall: add resulting path to queue
         '''
-        visited = 1
         directions = [1, 2, 3, 4]
-        dest_found = False
         puzzle_map = {(0, 0): 1}
         path_queue = deque([((0 + x, 0 + y), (direction, )) for direction, (x, y) in self.movements.items()])
         while len(path_queue) > 0:
             dest_coords, path = path_queue.popleft()
-            self.cpu = Cpu(self.code)
+            self.cpu.reset()
             output = self.run(path)
+            if dest_coords in puzzle_map and puzzle_map[dest_coords] is not None and puzzle_map[dest_coords] != output:
+                print('Something wrong here!' + str(dest_coords) + len(path))
+                break
             puzzle_map[dest_coords] = output
-            if visited%100 == 0:
-                self.print_map(puzzle_map)
-            visited += 1
             if output == 2:
-                print('DEST FOUND AT ' + dest_coords)
-                dest_found = True
-            if output != 0 and not dest_found:
+                self.print_map(puzzle_map)
+                print(f'DEST FOUND AT {dest_coords} after {len(path)} steps')
+                break
+            if output != 0:
                 #random.shuffle(directions)
                 for direction in directions:
                     (x, y) = self.movements[direction]
                     new_coords = (dest_coords[0] + x, dest_coords[1] + y)
                     if new_coords not in puzzle_map:
+                        puzzle_map[new_coords] = None
                         path_queue.append((new_coords, path + (direction, )))
         print()
         return puzzle_map
@@ -79,11 +78,17 @@ class RepairDrone():
 
         for y in range(min_y, max_y + 1):
             for x in range(min_x, max_x + 1):
-                if (x, y) not in puzzle_map:
-                    tile = '.'
+                if x == 0 and y == 0:
+                    tile = '&'
+                elif (x, y) not in puzzle_map:
+                    tile = ' '
                 else:
                     tile = puzzle_map[(x, y)]
-                print(self.term.move(y - min_y, x - min_x) + str(tile), end='')
+                    if tile is None:
+                        tile = '?'
+                    else:
+                        tile = ('#', '.', '@')[tile]
+                print(self.term.move(y - min_y, x - min_x) + tile, end='')
         print(flush=True)
         
 
@@ -94,5 +99,4 @@ with open('15/puzzle_input.int') as f:
     code = [int(i) for i in f.readline().split(',')]
 
 robot = RepairDrone(code)
-area_map = robot.scan_area()
-print(area_map)
+robot.scan_area()

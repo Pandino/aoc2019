@@ -1,3 +1,5 @@
+from collections import deque
+
 class Cpu():
     '''Class representing a Intcode CPU.
 
@@ -16,17 +18,17 @@ class Cpu():
         
         self.reset()
         if inputs is not None:
-            self.input_buffer = inputs
+            self.input_buffer = deque(inputs)
         
         
-    def reset(self):
+    def reset(self):        
         self.code = self.rom.copy()
         self.relative_base = 0
         self.cycle = 0
         self.done = False
         self.input_wait = False
         self.output_wait = False
-        self.input_buffer = list()
+        self.input_buffer = deque()
         self.instruction_pointer = 0
     
     def _next(self, op_len):
@@ -127,7 +129,7 @@ class Cpu():
                 # Save a number from Input. Params: [Out]. Len: 2
                 if len(self.input_buffer) > 0:
                     params = self._get_parameters(1)
-                    self._write_parameter(params[0], self.input_buffer.pop())
+                    self._write_parameter(params[0], self.input_buffer.popleft())
                     self.input_wait = False
                     self._next(2)
                 else:
