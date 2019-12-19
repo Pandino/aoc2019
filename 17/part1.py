@@ -61,3 +61,7 @@ with open('17/puzzle_input.int') as f:
 camera = ASCII(code)
 camera.run()
 print(camera.alignment())
+
+code[0] = 2
+drone = ASCII(code)
+
