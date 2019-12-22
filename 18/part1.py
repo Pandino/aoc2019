@@ -3,7 +3,7 @@ from heapq import heappop, heappush
 from itertools import combinations
 
 class Maze():
-    key_codes = 'abcdefghijklmnopqrstuwxyz'
+    key_codes = 'abcdefghijklmnopqrstuvwxyz'
     door_codes = key_codes.upper()
     directions = ((0, 1), (0, -1), (1, 0), (-1, 0))
 
@@ -145,18 +145,23 @@ class Maze():
                 if len(current_constrains) == 0:
                     yield key
 
+        def reverse_keys(position, key):
+            if come_from[(position, key)] is None:
+                return ''
+            prev_pos, prev_key = come_from[(position, key)] 
+            return reverse_keys(prev_pos, prev_key) + self.puzzle_map[position]
+
         come_from = dict()
         steps_so_far = dict()
-        # collected_keys = dict()
         graph = []
         heappush(graph, (0, self.start_point, ''))
-        come_from[self.start_point] = None
+        come_from[(self.start_point, '')] = None
         steps_so_far[(self.start_point, '')] = 0
         while graph:
-            steps, position, keys = heappop(graph)
+            _, position, keys = heappop(graph)
             
             if len(keys) == len(self.keys):
-                return (steps, keys)
+                return (steps_so_far[(position, keys)], reverse_keys(position, keys))
 
             # print(steps, keys)
 
@@ -165,12 +170,11 @@ class Maze():
                 new_collected_keys = keys + next_key
                 key_index = ''.join(sorted(new_collected_keys))
                 distance = self.shortest_path(position, next_pos)
-                new_steps = steps + distance
+                new_steps = steps_so_far[(position, keys)] + distance
                 if (next_pos, key_index) not in steps_so_far or steps_so_far[(next_pos, key_index)] > new_steps :
-                        # collected_keys[next_pos] = new_collected_keys
                         steps_so_far[(next_pos, key_index)] = new_steps
-                        come_from[next_pos] = position
-                        heappush(graph, (new_steps, next_pos, new_collected_keys))                
+                        come_from[(next_pos, key_index)] = (position, keys)
+                        heappush(graph, (new_steps, next_pos, key_index))                
 
         return None
 
@@ -201,5 +205,8 @@ print(m.solve2())
 
 m = Maze('18/maze')
 m.find_keys()
+m.print_keys()
 m.constrains()
+print(m.key_constrains)
+
 print(m.solve2())
