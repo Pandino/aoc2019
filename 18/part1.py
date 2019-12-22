@@ -1,19 +1,6 @@
 from collections import deque
 from heapq import heappop, heappush
 
-class Key():
-    def __init__(self, name, position):
-        self.name = name
-        self.position = position
-        self.constrains = set()
-
-class Dependencies():
-    def __init__(self):
-        self.keys = set()
-    
-    def add_constrain(self, key, constrain):
-        pass
-
 class Maze():
     key_codes = 'abcdefghijklmnopqrstuwxyz'
     door_codes = key_codes.upper()
@@ -25,6 +12,7 @@ class Maze():
         self.doors_to = dict()
         self.keys_to = dict()
         self.key_constrains = dict()
+        self.cache = dict()
         with open(filename) as f:
             for y, line in enumerate(f):
                 for x, point in enumerate(line.strip()):
@@ -47,6 +35,8 @@ class Maze():
 
     def shortest_path(self, a, b, collected_keys):
         '''Find shortest path between a and b. Returns the steps needed.'''
+        if (a, b) in self.cache:
+            return self.cache[(a,b)]        
         frontier = []
         come_from = {}
         cost_to = {}
@@ -62,8 +52,9 @@ class Maze():
 
             for next_point in self._get_next_points(current):
                 new_cost = cost_to[current] + 1
-                if self._is_key(next_point, collected_keys):
-                    continue
+                # if self._is_key(next_point, collected_keys):
+                #     #wrong way
+                #     continue
                 if next_point not in cost_to or new_cost < cost_to[next_point]:
                     cost_to[next_point] = new_cost
                     priority = new_cost + self._distance(next_point, b)
@@ -72,6 +63,7 @@ class Maze():
         else:
             return None
         
+        self.cache[(a, b)] = cost_to[b]
         return cost_to[b]
 
     def print_keys(self):
@@ -123,10 +115,11 @@ class Maze():
             for key, p in self.keys.items():
                 if key in collected_keys:
                     continue
-                doors = set(self.doors_to[p]) - set([s.upper() for s in collected_keys])
-                if len(doors) == 0:
+                constrains = frozenset(self.doors_to[p].lower() + self.keys_to[p][:-1]) - frozenset(collected_keys)
+                if len(constrains) == 0:
                     result.append(key)
-            return result                
+            return result
+                          
 
         graph = []
         heappush(graph, (0, 0, self.start_point, ''))
@@ -136,18 +129,13 @@ class Maze():
                 return (steps, collected_keys)
             
             # print(steps, collected_keys)
-                    
 
             for next_key in reachable_steps(collected_keys):
                 next_pos = self.keys[next_key]
                 new_collected_keys = collected_keys + next_key
-                distance = self.shortest_path(current_pos, next_pos, new_collected_keys)
-                if distance is None:
-                    continue
-                new_steps = steps + distance
+                new_steps = steps + self.shortest_path(current_pos, next_pos, new_collected_keys)
                 priority = new_steps
-                heappush(graph, (priority, new_steps, next_pos, new_collected_keys))
-                
+                heappush(graph, (priority, new_steps, next_pos, new_collected_keys))                
 
         return None
 
@@ -155,7 +143,7 @@ class Maze():
 
 
 
-m = Maze('18/test1')
+m = Maze('18/test2')
 m.find_keys()
 m.print_keys()
 m.constrains()
