@@ -16,12 +16,13 @@ class Maze():
         self.cache = dict()
         self.max_x = 0
         self.max_y = 0
+        self.start_points = list()
         with open(filename) as f:
             for y, line in enumerate(f):
                 for x, point in enumerate(line.strip()):
                     self.puzzle_map[(x, y)] = point
                     if point == '@':
-                        self.start_point = (x, y)
+                        self.start_points.append((x, y))
                     if x > self.max_x: self.max_x = x
                     if y > self.max_y: self.max_y = y
 
@@ -79,11 +80,12 @@ class Maze():
     def find_keys(self):
         '''Breath first, find all keys and doors blocking them'''
         visited = set()
-        x, y = self.start_point
-        pathes = deque( [(self.start_point,)] )
-        self.doors_to[self.start_point] = ''
-        self.keys_to[self.start_point] = ''
-        visited.add(self.start_point)
+        pathes = deque()
+        for start_point in self.start_points:
+            pathes.append((start_point,))
+            self.doors_to[start_point] = ''
+            self.keys_to[start_point] = ''
+            visited.add(start_point)
         while len(pathes) > 0:
             path = pathes.popleft()
             last_visited = path[-1]
@@ -106,36 +108,17 @@ class Maze():
 
     def _get_next_points(self, point):
         x, y = point
-        return [(x + d[0], y + d[1]) for d in self.directions if self.puzzle_map[(x + d[0], y + d[1])] != '#']
+        yield from ((x + d[0], y + d[1]) for d in self.directions if self.puzzle_map[(x + d[0], y + d[1])] != '#')
 
-    def solve(self):
-        def reachable_steps(collected_keys):
-            for key, constrains in self.key_constrains.items():
-                if key in collected_keys:
-                    continue
-                current_constrains = constrains - set(collected_keys)
-                if len(current_constrains) == 0:
-                    yield key
-                          
-        shortest_path = dict()
-        graph = []
-        heappush(graph, (0, self.start_point, ''))
-        while graph:
-            steps, current_pos, collected_keys = heappop(graph)
-            if len(collected_keys) == len(self.keys):
-                return (steps, collected_keys)
-
-            print(steps, collected_keys)
-
-            for next_key in reachable_steps(collected_keys):
-                next_pos = self.keys[next_key]
-                new_collected_keys = collected_keys + next_key
-                distance = self.shortest_path(current_pos, next_pos)
-                new_steps = steps + distance
-                heappush(graph, (new_steps, next_pos, new_collected_keys))                
-
-        return None
-
+    def shortest_path_multi(self, start, b):
+        result = list()
+        for point in start:
+            result.append(self.shortest_path(point, b))
+        if len(result) > 1:
+            return tuple(result)
+        else:
+            return result[0]
+    
     def solve2(self):
         def reachable_steps(c_keys):
             for key, constrains in self.key_constrains.items():
@@ -145,65 +128,38 @@ class Maze():
                 if len(current_constrains) == 0:
                     yield key
 
-        def reverse_keys(position, key):
-            if come_from[(position, key)] is None:
-                return ''
-            prev_pos, prev_key = come_from[(position, key)] 
-            return reverse_keys(prev_pos, prev_key) + self.puzzle_map[position]
-
-        come_from = dict()
         steps_so_far = dict()
         graph = []
-        heappush(graph, (0, self.start_point, ''))
-        come_from[(self.start_point, '')] = None
-        steps_so_far[(self.start_point, '')] = 0
+        start_points = tuple(self.start_points)
+        heappush(graph, (0, start_points, ''))
+        steps_so_far[(start_points, '')] = 0
         while graph:
-            _, position, keys = heappop(graph)
+            _, positions, keys = heappop(graph)
             
             if len(keys) == len(self.keys):
-                return (steps_so_far[(position, keys)], reverse_keys(position, keys))
-
-            # print(steps, keys)
+                return (steps_so_far[(positions, keys)])
 
             for next_key in reachable_steps(keys):
                 next_pos = self.keys[next_key]
                 new_collected_keys = keys + next_key
                 key_index = ''.join(sorted(new_collected_keys))
-                distance = self.shortest_path(position, next_pos)
-                new_steps = steps_so_far[(position, keys)] + distance
-                if (next_pos, key_index) not in steps_so_far or steps_so_far[(next_pos, key_index)] > new_steps :
-                        steps_so_far[(next_pos, key_index)] = new_steps
-                        come_from[(next_pos, key_index)] = (position, keys)
-                        heappush(graph, (new_steps, next_pos, key_index))                
+                distances = self.shortest_path_multi(positions, next_pos)
+
+                section = [i for i in range(len(distances)) if distances[i] is not None][0]
+                new_steps = steps_so_far[(positions, keys)] + distances[section]
+                new_positions = list(positions)
+                new_positions[section] = next_pos
+                new_positions = tuple(new_positions)
+
+                if (new_positions, key_index) not in steps_so_far or steps_so_far[(new_positions, key_index)] > new_steps :
+                        steps_so_far[(new_positions, key_index)] = new_steps
+                        heappush(graph, (new_steps, new_positions, key_index))                
 
         return None
 
 
 
-m = Maze('18/test00')
-m.find_keys()
-m.print_keys()
-m.constrains()
-print(m.key_constrains)
-# print(m.solve())
-print(m.solve2())
-
-m = Maze('18/test1')
-m.find_keys()
-m.constrains()
-print(m.solve2())
-
-m = Maze('18/test2')
-m.find_keys()
-m.constrains()
-print(m.solve2())
-
-m = Maze('18/test3')
-m.find_keys()
-m.constrains()
-print(m.solve2())
-
-m = Maze('18/maze')
+m = Maze('18/maze2')
 m.find_keys()
 m.print_keys()
 m.constrains()
