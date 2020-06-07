@@ -30,6 +30,9 @@ class Cpu():
         self.output_wait = False
         self.input_buffer = deque()
         self.instruction_pointer = 0
+
+    def read(self, position):
+        return self.code[position]
     
     def _next(self, op_len):
         self.instruction_pointer += op_len
@@ -41,7 +44,7 @@ class Cpu():
     def _get_opcode(self):
         '''Return the opcode of the current instruction'''
         instruction = self._get_instruction()
-        return int(str(instruction)[-2:])
+        return instruction % 100
 
     def _get_modes(self, num_of_params):
         '''Return the num_of_params parameter modes of the current instruction'''
