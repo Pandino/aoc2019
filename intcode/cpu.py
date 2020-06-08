@@ -48,10 +48,12 @@ class Cpu():
 
     def _get_modes(self, num_of_params):
         '''Return the num_of_params parameter modes of the current instruction'''
-        instruction = self._get_instruction()
-        template = '{:0>' + str(num_of_params + 2) + '}'
-        normalized = template.format(str(instruction))[-3:(-4 - num_of_params):-1]
-        return [int(mode) for mode in normalized]
+        modes = list()
+        instruction = self._get_instruction() // 100
+        for pos in range(num_of_params):
+            modes.append(instruction % 10)
+            instruction //= 10
+        return modes
 
     def _get_parameters(self, num_of_params):
         '''Return a list of parameters of the current instruction.

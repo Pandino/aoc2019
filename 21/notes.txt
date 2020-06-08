@@ -1,0 +1,11 @@
+
+   **
+0ABCDEFGHI
+@##.#.##..#.###     (Any holes in ABC, ground in D) FALLS IN E
+ TTFTFTTFFTFTTT
+
+Once in D, he can't jump again in H!
+
+Hole either in a,b or c
+AND d is T
+AND E is T OR H is T (give us some space)
