@@ -105,6 +105,9 @@ class Cpu():
     def input(self, value):
         self.input_buffer.append(value)
 
+    def batch_input(self, values):
+        self.input_buffer.extend(values)
+
     def run(self):
 
         if self.done:
